@@ -13,7 +13,7 @@ def fetch_top_school_districts(state_code):
     api_url = "https://schooldigger-k-12-school-data-api.p.rapidapi.com/v2.0/rankings/districts/VA"
 
     headers = {
-        "X-RapidAPI-Key": "7816c75fadmshec207b26b80d79ep1b5b07jsnf5763b908667",
+        "X-RapidAPI-Key": "",
         "X-RapidAPI-Host": "schooldigger-k-12-school-data-api.p.rapidapi.com"
     }
 
@@ -53,7 +53,7 @@ def fetch_properties(state_code):
     querystring = {"state_code":"VA","sort":"newest","offset":"0"}
 
     headers = {
-        "X-RapidAPI-Key": "7816c75fadmshec207b26b80d79ep1b5b07jsnf5763b908667",
+        "X-RapidAPI-Key": "",
         "X-RapidAPI-Host": "us-real-estate.p.rapidapi.com"
     }
 
