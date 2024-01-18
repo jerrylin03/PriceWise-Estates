@@ -1,0 +1,415 @@
+{
+  "type": "object",
+  "properties": {
+    "rankYear": {
+      "format": "int32",
+      "description": "Year this ranking list represents (2018 = 2017-18)",
+      "type": "integer",
+      "minimum": -2147483648,
+      "maximum": 2147483647
+    },
+    "rankYearCompare": {
+      "format": "int32",
+      "description": "Year rankings returned for comparison (2018 = 2017-18)",
+      "type": "integer",
+      "minimum": -2147483648,
+      "maximum": 2147483647
+    },
+    "rankYearsAvailable": {
+      "description": "The years for which SchoolDigger district rankings are available for this state",
+      "type": "array",
+      "items": {
+        "format": "int32",
+        "type": "integer",
+        "minimum": -2147483648,
+        "maximum": 2147483647
+      }
+    },
+    "numberOfDistricts": {
+      "format": "int32",
+      "description": "The total count of districts in the entire rank list",
+      "type": "integer",
+      "minimum": -2147483648,
+      "maximum": 2147483647
+    },
+    "numberOfPages": {
+      "format": "int32",
+      "description": "The total count of pages in your query list based on given per_page value",
+      "type": "integer",
+      "minimum": -2147483648,
+      "maximum": 2147483647
+    },
+    "districtList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "districtID": {
+            "description": "SchoolDigger District ID Number (7 digits). Use /districts/{districtID} to retrieve the entire district record",
+            "type": "string"
+          },
+          "districtName": {
+            "description": "District name",
+            "type": "string"
+          },
+          "phone": {
+            "description": "District phone number",
+            "type": "string"
+          },
+          "url": {
+            "description": "SchoolDigger URL for this district",
+            "type": "string"
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "latLong": {
+                "type": "object",
+                "properties": {
+                  "latitude": {
+                    "format": "double",
+                    "type": "number",
+                    "minimum": -1.7976931348623157e+308,
+                    "maximum": 1.7976931348623157e+308
+                  },
+                  "longitude": {
+                    "format": "double",
+                    "type": "number",
+                    "minimum": -1.7976931348623157e+308,
+                    "maximum": 1.7976931348623157e+308
+                  }
+                }
+              },
+              "street": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "stateFull": {
+                "description": "Full state name (WA = Washington)",
+                "type": "string"
+              },
+              "zip": {
+                "type": "string"
+              },
+              "zip4": {
+                "type": "string"
+              },
+              "cityURL": {
+                "description": "SchoolDigger URL for schools in this city",
+                "type": "string"
+              },
+              "zipURL": {
+                "description": "SchoolDigger URL for schools in this zip code",
+                "type": "string"
+              },
+              "html": {
+                "description": "HTML formatted address",
+                "type": "string"
+              }
+            }
+          },
+          "locationIsWithinBoundary": {
+            "description": "Indicates whether this school's boundary includes the specified location from nearLatitude/nearLongitude or boundaryAddress (Enterprise API level)",
+            "type": "boolean"
+          },
+          "hasBoundary": {
+            "description": "Indicates that an attendance boundary is available for this district. (To retrieve, look up district with /districts/{id})",
+            "type": "boolean"
+          },
+          "distance": {
+            "format": "double",
+            "description": "Distance from nearLatitude/nearLongitude (if supplied)",
+            "type": "number",
+            "minimum": -1.7976931348623157e+308,
+            "maximum": 1.7976931348623157e+308
+          },
+          "isWithinBoundary": {
+            "description": "Indicates whether this district's boundary includes the specified location from nearLatitude/nearLongitude",
+            "type": "boolean"
+          },
+          "county": {
+            "type": "object",
+            "properties": {
+              "countyName": {
+                "description": "County in which the school or district is located",
+                "type": "string"
+              },
+              "countyURL": {
+                "description": "SchoolDigger URL for all schools in this county",
+                "type": "string"
+              }
+            }
+          },
+          "lowGrade": {
+            "description": "The low grade served by this district (PK = Prekindergarten, K = Kindergarten)",
+            "type": "string"
+          },
+          "highGrade": {
+            "description": "The high grade served by this district",
+            "type": "string"
+          },
+          "numberTotalSchools": {
+            "format": "int32",
+            "description": "Count of schools in the district",
+            "type": "integer",
+            "minimum": -2147483648,
+            "maximum": 2147483647
+          },
+          "numberPrimarySchools": {
+            "format": "int32",
+            "description": "Count of schools designated as primary schools",
+            "type": "integer",
+            "minimum": -2147483648,
+            "maximum": 2147483647
+          },
+          "numberMiddleSchools": {
+            "format": "int32",
+            "description": "Count of schools designated as middle schools",
+            "type": "integer",
+            "minimum": -2147483648,
+            "maximum": 2147483647
+          },
+          "numberHighSchools": {
+            "format": "int32",
+            "description": "Count of schools designated as high schools",
+            "type": "integer",
+            "minimum": -2147483648,
+            "maximum": 2147483647
+          },
+          "numberAlternativeSchools": {
+            "format": "int32",
+            "description": "Count of schools designated as other/alternative schools",
+            "type": "integer",
+            "minimum": -2147483648,
+            "maximum": 2147483647
+          },
+          "rankHistory": {
+            "description": "SchoolDigger yearly rank history of the district",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "year": {
+                  "format": "int32",
+                  "description": "School year (2017 - 2016-17)",
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
+                },
+                "rank": {
+                  "format": "int32",
+                  "description": "Statewide rank of this district",
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
+                },
+                "rankOf": {
+                  "format": "int32",
+                  "description": "Count of district ranked in this state",
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
+                },
+                "rankStars": {
+                  "format": "int32",
+                  "description": "The number of stars SchoolDigger awarded in the ranking of the district (0-5, 5 is best)",
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
+                },
+                "rankStatewidePercentage": {
+                  "format": "double",
+                  "description": "Percentile of this district's rank (e.g. this district performed better than (x)% of this state's districts)",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "rankScore": {
+                  "format": "double",
+                  "description": "The rank score calculated by SchoolDigger (see https://www.schooldigger.com/aboutranking.aspx)",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                }
+              }
+            }
+          },
+          "districtYearlyDetails": {
+            "description": "District yearly metrics",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "year": {
+                  "format": "int32",
+                  "description": "School year (2018 = 2017-18)",
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
+                },
+                "numberOfStudents": {
+                  "format": "int32",
+                  "description": "Number of students enrolled in the district",
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
+                },
+                "numberOfSpecialEdStudents": {
+                  "format": "int32",
+                  "description": "The number of students having a written Individualized Education Program (IEP) under the Individuals With Disabilities Education Act (IDEA)",
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
+                },
+                "numberOfEnglishLanguageLearnerStudents": {
+                  "format": "int32",
+                  "description": "The number of English language learner (ELL) students served in appropriate programs",
+                  "type": "integer",
+                  "minimum": -2147483648,
+                  "maximum": 2147483647
+                },
+                "numberOfTeachers": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent teachers employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfTeachersPK": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent pre-kindergarten teachers employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfTeachersK": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent kindergarten teachers employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfTeachersElementary": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent elementary teachers employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfTeachersSecondary": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent secondary teachers employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfAids": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent instructional aids employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfCoordsSupervisors": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent instructional coordinators/supervisors employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfGuidanceElem": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent elementary guidance counselors employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfGuidanceSecondary": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent secondary guidance counselors employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfGuidanceTotal": {
+                  "format": "double",
+                  "description": "Total number of full-time equivalent guidance counselors employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfLibrarians": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent librarians/media specialists employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfLibraryStaff": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent librarians/media support staff employed by the district",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfLEAAdministrators": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent LEA administrators employed by the district (LEA)",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfLEASupportStaff": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent LEA administrative support staff employed by the district (LEA)",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfSchoolAdministrators": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent school administrators employed by the district (LEA)",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfSchoolAdminSupportStaff": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent school administrative support staff employed by the district (LEA)",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfStudentSupportStaff": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent student support services staff employed by the district (LEA)",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                },
+                "numberOfOtherSupportStaff": {
+                  "format": "double",
+                  "description": "Number of full-time equivalent all other support staff employed by the district (LEA)",
+                  "type": "number",
+                  "minimum": -1.7976931348623157e+308,
+                  "maximum": 1.7976931348623157e+308
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "rankCompareYear": {
+      "format": "int32",
+      "type": "integer",
+      "minimum": -2147483648,
+      "maximum": 2147483647
+    }
+  }
+}
