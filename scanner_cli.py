@@ -114,14 +114,14 @@ def store_user_data(username):
     try:
         with open('user_data.json', 'r', encoding="utf8") as file:
             user_data = json.load(file)
+        # Check if the username is already in the database
+        if username in user_data:
+            print(f"Hello, {username}!")
+        else:
+            print(f"New user {username}")
     except FileNotFoundError:
         # Create a new user_data dictionary if the file doesn't exist
         user_data = {}
-
-    # Check if the username is already in the database
-    if username in user_data:
-        print(f"Hello, {username}!")
-    else:
         print(f"New user {username}")
 
     # Ask for and save user input
@@ -131,9 +131,8 @@ def store_user_data(username):
         'school_rating_preference': int(input("Enter your school rating preference (1-5): ")),
         'gross_income': float(input("Enter your gross income $: ")),
         'current_debt': float(input("Enter your current debt $: ")),
-        'property_management_fees': float(input("Enter property management fees %: ")),
-        'maintenance_costs': float(input("Enter maintenance costs: ")),
-        'property_taxes': float(input("Enter property taxes: ")),
+        'property_management_fees': float(input("Enter property management fees as percent of income: ")),
+        'maintenance_costs': float(input("Enter maintenance costs as percent of income: ")),
         'insurance': float(input("Enter insurance costs: "))
     }
 
@@ -145,7 +144,7 @@ def store_user_data(username):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PriceWise Estates CLI")
-    parser.add_argument("-function", help="Options: properties, districts, forms", required=True)
+    parser.add_argument("-function", help="Options: properties, districts, profile", required=True)
     parser.add_argument("-state_code", help="State code to fetch from, both properties & districts ")
     parser.add_argument("-city",  help="City to fetch properties")
     parser.add_argument("-username", help="Used to reference stored user data", default="Guest")
@@ -156,7 +155,7 @@ if __name__ == "__main__":
         fetch_properties(args.state_code)
     elif args.function == "schools":
         fetch_top_school_districts(args.state_code)
-    elif args.function == "forms":
+    elif args.function == "profile":
         store_user_data(args.username)
     else:
-        print("N/A, Options: properties, schools, forms")
+        print("N/A, Options: properties, schools, profile")
