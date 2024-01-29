@@ -18,11 +18,11 @@ RAPID_API_KEY = os.getenv("RAPID_API_KEY")
 
 def fetch_top_school_districts(state_code):
     """ Function to get the top 10 school districts in a state saved to a json file """
-    api_url = "https://schooldigger-k-12-school-data-api.p.rapidapi.com/v2.0/rankings/districts/" + state_code
+    api_url = os.getenv("SCHOOL_API_URL") + state_code
 
     headers = {
         "X-RapidAPI-Key": RAPID_API_KEY,
-        "X-RapidAPI-Host": "schooldigger-k-12-school-data-api.p.rapidapi.com"
+        "X-RapidAPI-Host": os.getenv("SCHOOL_API_HOST")
     }
 
     try:
@@ -58,13 +58,13 @@ def fetch_top_school_districts(state_code):
 
 def fetch_properties(state_code):
     """ Function to get the newest 42 properties for sale by state saved to a json file """
-    api_url = "https://us-real-estate.p.rapidapi.com/v3/for-sale"
+    api_url = os.getenv("ESTATE_API_URL")
 
     querystring = {"state_code":state_code,"sort":"newest","offset":"0"}
 
     headers = {
         "X-RapidAPI-Key": RAPID_API_KEY,
-        "X-RapidAPI-Host": "us-real-estate.p.rapidapi.com"
+        "X-RapidAPI-Host": os.getenv("ESTATE_API_HOST")
     }
 
     try:
@@ -129,11 +129,11 @@ def store_user_data(username):
             print("Here is the current user profile")
             print(f"Real Estate Minimum Price: ${username_data['min_price_range']}")
             print(f"Real Estate Maximum Price: ${username_data['max_price_range']}")
-            print(f"School District Rating Preference: {username_data['school_rating_preference']}/10")
+            print(f"District Rating Preference: {username_data['school_rating_preference']}/10")
             print(f"Gross Monthly Income: ${username_data['gross_income']}")
             print(f"Monthly Debt Payments: ${username_data['current_debt']}")
-            print(f"Property Management fees as percent of rental income: {username_data['current_debt']}%")
-            print(f"Maintenance costs as percent of rental income: {username_data['maintenance_costs']}%")
+            print(f"Management fees as percent of rental income: {username_data['current_debt']}%")
+            print(f"Maintenance as percent of rental income: {username_data['maintenance_costs']}%")
             print(f"Insurance costs as percent of rental income: {username_data['insurance']}%")
             # ask if we want to update
             update = input("Do you want to update the user profile ? (Y/N) ")
@@ -153,7 +153,7 @@ def store_user_data(username):
             'school_rating_preference': int(input("Enter your school rating preference (1-10): ")),
             'gross_income': float(input("Enter your gross monthly income $: ")),
             'current_debt': float(input("Enter your current monthly debt payments $: ")),
-            'property_management_fees': int(input("Enter property management fees as percent of income: ")),
+            'property_management_fees': int(input("Enter management fees as percent of income: ")),
             'maintenance_costs': int(input("Enter maintenance costs as percent of income: ")),
             'insurance': int(input("Enter insurance costs as percent of rental income: "))
         }
@@ -168,7 +168,7 @@ def store_user_data(username):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PriceWise Estates CLI")
     parser.add_argument("-function", help="Options: properties, districts, profile", required=True)
-    parser.add_argument("-state_code", help="State code to fetch from, both properties & districts ")
+    parser.add_argument("-state_code", help="State code to fetch from, both properties & districts")
     parser.add_argument("-city",  help="City to fetch properties")
     parser.add_argument("-username", help="Used to reference stored user data", default="Guest")
 
