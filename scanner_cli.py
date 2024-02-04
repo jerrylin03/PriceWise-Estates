@@ -104,6 +104,87 @@ def fetch_properties(state_code):
     except requests.exceptions.RequestException as ex:
         print(f"Error: {ex}")
 
+def parse_mortgage_file(input_file, output_file):
+    # parse mortgage file
+    last_row = []
+
+    # parse zillow file
+    with open(input_file, 'r', newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+
+        # iterate through each row
+        for row in reader:
+            date = row['DATE']
+            mortgage_rate = row['MORTGAGE30US']
+
+            mortgage_data = {
+                'date': date,
+                'mortgage_rate': float(mortgage_rate)
+            }
+
+            # Update last_row with the current row
+            last_row = mortgage_data
+
+    # Save the parsed data in JSON format
+    with open(output_file, 'w', encoding='utf-8') as jsonfile:
+        json.dump(last_row, jsonfile, indent=2)
+
+    print(f"Parsed data saved to {output_file}")
+
+def parse_zillow_file(input_file, output_file, data_name):
+    data = []
+
+    # parse zillow file
+    with open(input_file, 'r', newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+
+        region_data = {}
+
+        for row in reader:
+            # grab the last key in the dict
+            last_key = list(row)[-1]
+            if row['RegionName'] != "United States":
+                # seperate region name into state and city
+                city = row['RegionName'].split(", ")[0]
+                state_code = row['RegionName'].split(", ")[1]
+                
+                if state_code in region_data:
+                    region_data[state_code].update({
+                        city: {data_name: row[last_key]}# Grab the most recent data column
+                    })
+                else:
+                    region_data[state_code] = {
+                        row['RegionName'].split(", ")[0]: {data_name: row[last_key]}
+                    }
+
+            data.append(region_data)
+
+    # Save the parsed data in JSON format
+    with open(output_file, 'w', encoding='utf-8') as jsonfile:
+        json.dump(data, jsonfile, indent=2)
+
+    print(f"Parsed data saved to {output_file}")
+
+def parse_external_data():
+    """
+    Parse data from 
+    - median rent
+    - median price
+    - mortgage rates
+    - projected growth
+    store in JSON format
+
+    Parameters:
+
+    Returns:
+    None: Saves the parsed data in JSON format.
+    """
+
+    parse_zillow_file(os.getenv("MEDIAN_RENT_FILE"), "median_rent_by_region.json", "median_rent")
+    parse_zillow_file(os.getenv("MEDIAN_PRICE_FILE"), "median_price_by_region.json", "median_price")
+    parse_zillow_file(os.getenv("FORECAST_GROWTH_FILE"), "projected_growth_by_region.json", "projected_growth")
+    parse_mortgage_file(os.getenv("MORTGAGE_FILE"), "us_mortgage_rate.json")
+
 def store_user_data(username):
     """
     Store and calculate metrics based on user data.
@@ -167,7 +248,7 @@ def store_user_data(username):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PriceWise Estates CLI")
-    parser.add_argument("-function", help="Options: properties, districts, profile", required=True)
+    parser.add_argument("-function", help="Options: properties, districts, fetch, profile", required=True)
     parser.add_argument("-state_code", help="State code to fetch from, both properties & districts")
     parser.add_argument("-city",  help="City to fetch properties")
     parser.add_argument("-username", help="Used to reference stored user data", default="Guest")
@@ -180,5 +261,7 @@ if __name__ == "__main__":
         fetch_top_school_districts(args.state_code)
     elif args.function == "profile":
         store_user_data(args.username)
+    elif args.function == "fetch":
+        parse_external_data()
     else:
         print("N/A, Options: properties, schools, profile")
