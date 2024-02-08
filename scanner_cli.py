@@ -56,11 +56,11 @@ def fetch_top_school_districts(state_code):
     except requests.exceptions.RequestException as ex:
         print(f"Error: {ex}")
 
-def fetch_properties(state_code):
-    """ Function to get the newest 42 properties for sale by state saved to a json file """
+def fetch_properties(state_code, city):
+    """ Function to get the newest 42 properties for sale by state and city saved to a json file """
     api_url = os.getenv("ESTATE_API_URL")
 
-    querystring = {"state_code":state_code,"sort":"newest","offset":"0"}
+    querystring = {"state_code":state_code,"city":city, "sort":"newest","offset":"0"}
 
     headers = {
         "X-RapidAPI-Key": RAPID_API_KEY,
@@ -70,10 +70,10 @@ def fetch_properties(state_code):
     try:
         response = requests.get(api_url, headers=headers, params=querystring)
         print(response.raise_for_status())
+    
+        property_list =  response.json()["data"]["home_search"]
 
-        property_list =  response.json()["data"]["home_search"]["results"]
-
-        file_name = "real_estate_for_sale_" + state_code + ".json"
+        file_name = "real_estate_for_sale_" + city + "_" + state_code + ".json"
 
         # Extract specific information from each property
         filtered_properties = [
@@ -99,20 +99,20 @@ def fetch_properties(state_code):
         with open(file_name, mode='w', encoding="utf-8") as file:
             json.dump(filtered_properties, file, indent=2)
 
-        print(f"Retrieved newest 42 properties for sale in {state_code}")
+        print(f"Retrieved newest 42 properties for sale in {city} {state_code} ")
         print(f"Saved to {file_name}")
     except requests.exceptions.RequestException as ex:
         print(f"Error: {ex}")
 
 def parse_mortgage_file(input_file, output_file):
-    # parse mortgage file
+    # Parse mortgage file
     last_row = []
 
-    # parse zillow file
+    # Parse zillow file
     with open(input_file, 'r', newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
 
-        # iterate through each row
+        # Iterate through each row
         for row in reader:
             date = row['DATE']
             mortgage_rate = row['MORTGAGE30US']
@@ -134,17 +134,17 @@ def parse_mortgage_file(input_file, output_file):
 def parse_zillow_file(input_file, output_file, data_name):
     data = []
 
-    # parse zillow file
+    # Parse zillow file
     with open(input_file, 'r', newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
 
         region_data = {}
 
         for row in reader:
-            # grab the last key in the dict
+            # Grab the last key in the dict
             last_key = list(row)[-1]
             if row['RegionName'] != "United States":
-                # seperate region name into state and city
+                # Seperate region name into state and city
                 city = row['RegionName'].split(", ")[0]
                 state_code = row['RegionName'].split(", ")[1]
                 
@@ -245,6 +245,50 @@ def store_user_data(username):
 
         print(f"User data for {username} has been updated.")
 
+def calculate_score(property_id):
+    # Load data from JSON files
+    with open("median_price_by_region.json", 'r', encoding='utf-8') as price_file:
+        median_price_data = json.load(price_file)
+
+    with open("median_rent_by_region.json", 'r', encoding='utf-8') as rent_file:
+        median_rent_data = json.load(rent_file)
+
+    with open("real_estate_for_sale_WA.json", 'r', encoding='utf-8') as real_estate_file:
+        real_estate_data = json.load(real_estate_file)
+
+    # Find the property in real_estate_data using property_id
+    property_info = None
+    for info in real_estate_data:
+        if info['property_id'] == property_id:
+            property_info = info
+            break
+
+    # Extract state and city from the real estate data
+    state = property_info['address']['state_code']
+    city = property_info['address']['city']
+
+    # Find the median price based on state and city
+    median_price = None
+    for state_data in median_price_data:
+        if state in state_data:
+            city_data = state_data[state]
+            if city in city_data:
+                median_price = float(city_data[city]['median_price'])
+                break
+
+    # Find median rent based on state and city
+    median_rent = None
+    for state_data in median_rent_data:
+        if state in state_data:
+            city_data = state_data[state]
+            if city in city_data:
+                median_rent = float(city_data[city]['median_rent'])
+    
+    # Calculate the price to rent ratio (need annual rent for formula)
+    price_to_rent_ratio = median_price / (median_rent * 12)
+
+    # Output the result
+    print(f"Property ID: {property_id}, State: {state}, City: {city}, Price to Rent Ratio: {price_to_rent_ratio}, Median Price: {median_price}, Median Annual Rent: {median_rent*12}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PriceWise Estates CLI")
@@ -252,16 +296,19 @@ if __name__ == "__main__":
     parser.add_argument("-state_code", help="State code to fetch from, both properties & districts")
     parser.add_argument("-city",  help="City to fetch properties")
     parser.add_argument("-username", help="Used to reference stored user data", default="Guest")
+    parser.add_argument("-property_id", help="Property id from real estate for sale")
 
     args = parser.parse_args()
 
     if args.function == "properties":
-        fetch_properties(args.state_code)
+        fetch_properties(args.state_code, args.city)
     elif args.function == "schools":
         fetch_top_school_districts(args.state_code)
     elif args.function == "profile":
         store_user_data(args.username)
     elif args.function == "fetch":
         parse_external_data()
+    elif args.function == "score":
+        calculate_score(args.property_id)
     else:
         print("N/A, Options: properties, schools, profile")
