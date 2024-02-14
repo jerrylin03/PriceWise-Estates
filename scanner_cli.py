@@ -11,6 +11,19 @@ import os
 from dotenv import load_dotenv
 from pip._vendor import requests
 
+# To-DO
+# Desgin document for refactor
+# sqft
+# bedroom
+# price
+# take ratio of all of them
+# filter out to get first 5
+# zillow/rentcast
+# first version of investment score
+# cash flow in output
+
+# filter out 
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -69,9 +82,8 @@ def fetch_properties(state_code, city):
 
     try:
         response = requests.get(api_url, headers=headers, params=querystring)
-        print(response.raise_for_status())
     
-        property_list =  response.json()["data"]["home_search"]
+        property_list =  response.json()["data"]["home_search"]["results"]
 
         file_name = "real_estate_for_sale_" + city + "_" + state_code + ".json"
 
@@ -88,7 +100,8 @@ def fetch_properties(state_code, city):
                 "list_price": property["list_price"],
                 "description": {
                     "beds": property["description"]["beds"],
-                    "baths": property["description"]["baths"]
+                    "baths": property["description"]["baths"],
+                    "sqft": property["description"]["sqft"]
                 },
                 "primary_photo": property["primary_photo"]
             }
@@ -103,6 +116,48 @@ def fetch_properties(state_code, city):
         print(f"Saved to {file_name}")
     except requests.exceptions.RequestException as ex:
         print(f"Error: {ex}")
+
+def property_pretty_output(real_property, state_code, city):
+    """
+    Format:
+    $769,999
+    4 bds | 3 ba | 2,938 sqft
+    816 Anne St SW, Leesburg, VA 20175
+    https://photos.zillowstatic.com/fp/39e4c06297eb6babfe6d0a0c1b477b7c-p_e.webp
+    """
+    metrics = calculate_metrics(real_property['property_id'], state_code, city)
+    print(f"${real_property['list_price']}")
+    print(f"Price to Rent Ratio: {metrics['price_to_rent_ratio']:.2f}")
+    print(f"Mortgage Payments: ${metrics['mortgage_payments']:.2f}")
+    print(f"{real_property['description']['beds']} bds | {real_property['description']['baths']} ba | {real_property['description']['sqft']} sqft")
+    print(f"{real_property['address']['line']}, {real_property['address']['city']}, {real_property['address']['state_code']} {real_property['address']['postal_code']}")
+    print(real_property['primary_photo']['href'])
+
+def filter_properties(state_code, city, username):
+    # Get profile filters from file
+    with open("user_data.json", 'r', newline='', encoding='utf-8') as profile_file:
+        user_data = json.load(profile_file)
+    
+    username_data = user_data[username]
+    min_price = username_data['min_price_range']
+    max_price = username_data['max_price_range']
+
+    # Open properties file
+    properties_file = "real_estate_for_sale_" + city + "_" + state_code + ".json"
+    with open(properties_file, 'r', newline='', encoding='utf-8') as properties_file:
+        properties_data = json.load(properties_file)
+
+    # Iterate through property listings
+    count = 1
+    for real_property in properties_data:
+        # Filter based on profile
+        if real_property['list_price'] >= min_price and real_property['list_price'] <= max_price:      
+            # Pretty output to terminal
+            print(str(count) + ".")
+            # TO-DO method call to calculate metrics/scores, output in dict, pass to pretty output
+            property_pretty_output(real_property, state_code, city)
+            print("-")
+            count += 1
 
 def parse_mortgage_file(input_file, output_file):
     # Parse mortgage file
@@ -205,7 +260,7 @@ def store_user_data(username):
         # Check if the username is already in the database
         if username in user_data:
             print(f"Hello, {username}!")
-            # print out current user profile
+            # Print out current user profile
             username_data = user_data[username]
             print("Here is the current user profile")
             print(f"Real Estate Minimum Price: ${username_data['min_price_range']}")
@@ -213,13 +268,14 @@ def store_user_data(username):
             print(f"District Rating Preference: {username_data['school_rating_preference']}/10")
             print(f"Gross Monthly Income: ${username_data['gross_income']}")
             print(f"Monthly Debt Payments: ${username_data['current_debt']}")
-            print(f"Management fees as percent of rental income: {username_data['current_debt']}%")
+            print(f"Management fees as percent of rental income: {username_data['management_fees']}%")
             print(f"Maintenance as percent of rental income: {username_data['maintenance_costs']}%")
             print(f"Insurance costs as percent of rental income: {username_data['insurance']}%")
-            # ask if we want to update
+            # Ask if we want to update
             update = input("Do you want to update the user profile ? (Y/N) ")
         else:
             print(f"New user {username}")
+            update = "Y"
     except FileNotFoundError:
         # Create a new user_data dictionary if the file doesn't exist
         user_data = {}
@@ -234,7 +290,7 @@ def store_user_data(username):
             'school_rating_preference': int(input("Enter your school rating preference (1-10): ")),
             'gross_income': float(input("Enter your gross monthly income $: ")),
             'current_debt': float(input("Enter your current monthly debt payments $: ")),
-            'property_management_fees': int(input("Enter management fees as percent of income: ")),
+            'management_fees': int(input("Enter management fees as percent of income: ")),
             'maintenance_costs': int(input("Enter maintenance costs as percent of income: ")),
             'insurance': int(input("Enter insurance costs as percent of rental income: "))
         }
@@ -245,7 +301,7 @@ def store_user_data(username):
 
         print(f"User data for {username} has been updated.")
 
-def calculate_score(property_id):
+def calculate_metrics(property_id, state_code, city):
     # Load data from JSON files
     with open("median_price_by_region.json", 'r', encoding='utf-8') as price_file:
         median_price_data = json.load(price_file)
@@ -253,8 +309,14 @@ def calculate_score(property_id):
     with open("median_rent_by_region.json", 'r', encoding='utf-8') as rent_file:
         median_rent_data = json.load(rent_file)
 
-    with open("real_estate_for_sale_WA.json", 'r', encoding='utf-8') as real_estate_file:
+    # Get the specific fetched real estate file
+    properties_file = "real_estate_for_sale_" + city + "_" + state_code + ".json"
+    with open(properties_file, 'r', encoding='utf-8') as real_estate_file:
         real_estate_data = json.load(real_estate_file)
+
+    # Mortgage Rates
+    with open("us_mortgage_rate.json", 'r', encoding='utf-8') as mortgage_file:
+        mortgage_rate_data = json.load(mortgage_file)
 
     # Find the property in real_estate_data using property_id
     property_info = None
@@ -287,12 +349,27 @@ def calculate_score(property_id):
     # Calculate the price to rent ratio (need annual rent for formula)
     price_to_rent_ratio = median_price / (median_rent * 12)
 
+    # Get Mortgage Payments
+    # Assuming 30 Year mortgage with 80% of property value as principle
+    # P(r/n) / (1 - (1 + (r/n) )^-nt )
+    # Loan = P
+    # Term 30 years = t
+    # Mortgage Interest Rates = r
+    # 12 = n
+    p = property_info['list_price'] * 0.8
+    t = 30
+    n = 12
+    r = mortgage_rate_data['mortgage_rate']/100
+    payments = (p*(r/n))/(1-(1+(r/n))**(-(n*t)))
+
+    return {"price_to_rent_ratio": price_to_rent_ratio, "mortgage_payments": payments}
+
     # Output the result
-    print(f"Property ID: {property_id}, State: {state}, City: {city}, Price to Rent Ratio: {price_to_rent_ratio}, Median Price: {median_price}, Median Annual Rent: {median_rent*12}")
+    # print(f"Property ID: {property_id}, State: {state}, City: {city}, Price to Rent Ratio: {price_to_rent_ratio:.2f}, Median Price: {median_price:.2f}, Median Annual Rent: {median_rent*12:.2f}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PriceWise Estates CLI")
-    parser.add_argument("-function", help="Options: properties, districts, fetch, profile", required=True)
+    parser.add_argument("-function", help="Options: properties, districts, fetch, filter, profile, parse", required=True)
     parser.add_argument("-state_code", help="State code to fetch from, both properties & districts")
     parser.add_argument("-city",  help="City to fetch properties")
     parser.add_argument("-username", help="Used to reference stored user data", default="Guest")
@@ -302,13 +379,15 @@ if __name__ == "__main__":
 
     if args.function == "properties":
         fetch_properties(args.state_code, args.city)
+    elif args.function == "filter":
+        filter_properties(args.state_code, args.city, args.username)
     elif args.function == "schools":
         fetch_top_school_districts(args.state_code)
     elif args.function == "profile":
         store_user_data(args.username)
     elif args.function == "fetch":
         parse_external_data()
-    elif args.function == "score":
-        calculate_score(args.property_id)
+    elif args.function == "parse":
+        parse_external_data()
     else:
         print("N/A, Options: properties, schools, profile")
