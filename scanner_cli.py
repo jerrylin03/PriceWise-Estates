@@ -331,19 +331,16 @@ def calculate_metrics(property_id, state_code, city):
 
     # Find the median price based on state and city
     median_price = None
-    for state_data in median_price_data:
-        if state in state_data:
-            city_data = state_data[state]
-            if city in city_data:
-                median_price = float(city_data[city]['median_price'])
-                break
+    if state in median_price_data:
+        city_data = median_price_data[state]
+        if city in city_data:
+            median_price = float(city_data[city]['median_price'])
 
     # Find median rent based on state and city
     median_rent = None
-    for state_data in median_rent_data:
-        if state in state_data:
-            city_data = state_data[state]
-            if city in city_data:
+    if state in median_rent_data:
+        city_data = median_rent_data[state]
+        if city in city_data:
                 median_rent = float(city_data[city]['median_rent'])
     
     # Calculate the price to rent ratio (need annual rent for formula)
@@ -369,7 +366,7 @@ def calculate_metrics(property_id, state_code, city):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PriceWise Estates CLI")
-    parser.add_argument("-function", help="Options: properties, districts, fetch, filter, profile, parse", required=True)
+    parser.add_argument("-function", help="Options: properties, districts, filter, profile, parse", required=True)
     parser.add_argument("-state_code", help="State code to fetch from, both properties & districts")
     parser.add_argument("-city",  help="City to fetch properties")
     parser.add_argument("-username", help="Used to reference stored user data", default="Guest")
@@ -385,8 +382,6 @@ if __name__ == "__main__":
         fetch_top_school_districts(args.state_code)
     elif args.function == "profile":
         store_user_data(args.username)
-    elif args.function == "fetch":
-        parse_external_data()
     elif args.function == "parse":
         parse_external_data()
     else:
